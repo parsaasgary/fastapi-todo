@@ -103,3 +103,31 @@ alembic -c app/alembic.ini stamp head
 
 If you use the `confg/credentials.env` for connection strings, consider editing `app/alembic/env.py` to load the same `.env` values (or set `sqlalchemy.url` in `app/alembic.ini`) so migrations target the intended database.
 
+### Create a PostgreSQL database (example)
+Below are example commands to create a PostgreSQL role and database you can add to `confg/credentials.env` as `DATABASE_URL` / `DATABASE_TEST_URL`.
+
+Run these as a PostgreSQL superuser (e.g., `postgres`):
+
+```bash
+# create a role with password (replace values)
+psql -U postgres -c "CREATE ROLE new_user WITH LOGIN PASSWORD 'newpassword';"
+
+# create a database owned by the role
+psql -U postgres -c "CREATE DATABASE fast_db OWNER new_user;"
+
+# optionally create a test database
+psql -U postgres -c "CREATE DATABASE fast_db_test OWNER new_user;"
+
+# grant privileges (usually implicit for the owner)
+psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE fast_db TO new_user;"
+```
+
+Then set the connection URL in `confg/credentials.env` (example):
+
+```
+DATABASE_URL=postgresql+psycopg2://new_user:Parsaasgary3@localhost:5432/fast_db
+DATABASE_TEST_URL=postgresql+psycopg2://new_user:Parsaasgary3@localhost:5432/fast_db_test
+```
+
+Note: never commit real credentials. Use strong passwords and consider environment-specific secrets management for production.
+
